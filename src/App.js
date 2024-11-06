@@ -23,7 +23,7 @@ function App() {
   const [selectedOption, setSelectedOption] = useState(null);
   const [music, setMusic] = useState([]);
   const [showPlayer, setShowPlayer] = useState(false);
-  const client_id = process.env.CLIENT_ID;
+  const client_id = process.env.REACT_APP_CLIENT_ID;
   const songs = [];
 
   const makeRequest = (e) => {
@@ -34,7 +34,7 @@ function App() {
         params: {
           client_id: client_id,
           format: "json",
-          limit: 30,
+          limit: 5,
         },
       })
       .then((res) => {
