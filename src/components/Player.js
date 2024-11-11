@@ -1,5 +1,4 @@
 import "./Player.css";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState, useRef } from "react";
 import Select from "react-select";
@@ -11,46 +10,33 @@ import {
   faPause,
 } from "@fortawesome/free-solid-svg-icons";
 
-import unstoppable from "../assets/music/Unstoppable.mp3";
-import comeback from "../assets/music/Comeback.mp3";
-import finishLine from "../assets/music/Finish Line.mp3";
-import legend from "../assets/music/Legend.mp3";
-import monster from "../assets/music/Monster.mp3";
-import untravelled from "../assets/music/Untraveled Road.mp3";
-import weAre from "../assets/music/We Are.mp3";
-import danger from "../assets/music/What's Up Danger.mp3";
-import superkick from "../assets/music/Superkick Party.mp3";
-
-import unstoppableImg from "../assets/images/Unstoppable.jpg";
-import comebackImg from "../assets/images/Comeback.jpg";
-import finishLineImg from "../assets/images/Finish Line.jpg";
-import legendImg from "../assets/images/Legend.jpg";
-import monsterImg from "../assets/images/Monster.jpg";
-import untravelledImg from "../assets/images/Untraveled Road.jpg";
-import weAreImg from "../assets/images/We Are.jpg";
-import dangerImg from "../assets/images/What's Up Danger.jpg";
-import superkickImg from "../assets/images/Superkick Party.jpg";
-
-// Song Titles
-const songs = [
-  { title: "Unstoppable", audio: unstoppable, image: unstoppableImg },
-  { title: "Superkick Party", audio: superkick, image: superkickImg },
-  { title: "Comeback", audio: comeback, image: comebackImg },
-  { title: "Finish Line", audio: finishLine, image: finishLineImg },
-  { title: "Legend", audio: legend, image: legendImg },
-  { title: "Monster", audio: monster, image: monsterImg },
-  { title: "Untraveled Road", audio: untravelled, image: untravelledImg },
-  { title: "We Are", audio: weAre, image: weAreImg },
-  { title: "What's Up Danger", audio: danger, image: dangerImg },
-];
-
 // Keep track of song
 let songIndex = 0;
 
+const options = [
+  { value: "rock", label: "rock" },
+  { value: "metal", label: "metal" },
+  { value: "hardcore", label: "hardcore" },
+  { value: "alternativerock", label: "alternativerock" },
+  { value: "electronic", label: "electronic" },
+  { value: "punk", label: "punk" },
+  { value: "hardcorepunk", label: "hardcorepunk" },
+  { value: "folk", label: "folk" },
+  { value: "newage", label: "newage" },
+  { value: "classical", label: "classical" },
+  { value: "pop", label: "pop" },
+  { value: "choral", label: "choral" },
+  { value: "gospel", label: "gospel" },
+];
+
 export default function Player() {
-  const [songName, setSongName] = useState(songs[songIndex].title);
-  const [songAudio, setSongAudio] = useState(songs[songIndex].audio);
-  const [songImage, setSongImage] = useState(songs[songIndex].image);
+  // Song Titles
+  const songs = [];
+  const songOptions = [];
+
+  const [songName, setSongName] = useState();
+  const [songAudio, setSongAudio] = useState();
+  const [songImage, setSongImage] = useState();
   const [flowIcon, setFlowIcon] = useState(faPlay);
   const [musicContainer, setMusicContainer] = useState("");
   const [isPlaying, setIsPlaying] = useState(true);
@@ -58,76 +44,80 @@ export default function Player() {
   const [bar, setBar] = useState(0);
 
   const [selectedOption, setSelectedOption] = useState(null);
+  const [songPlayer, setSongPlayer] = useState(false);
 
-  useEffect(() => {
-    if (isPlaying) {
-      audioEl.current.pause();
-      setMusicContainer("");
-      setFlowIcon(faPlay);
-    } else if (!isPlaying) {
-      audioEl.current.play();
-      setMusicContainer("play");
-      setFlowIcon(faPause);
-    }
-  }, [isPlaying]);
+  // CREATE A .ENV FILE AND INCLUDE YOUR JAMENDO CLIENT ID
+  const client_id = process.env.REACT_APP_CLIENT_ID;
 
-  const handleNextSong = () => {
-    songIndex++;
+  // useEffect(() => {
+  //   if (isPlaying) {
+  //     audioEl.current.pause();
+  //     setMusicContainer("");
+  //     setFlowIcon(faPlay);
+  //   } else if (!isPlaying) {
+  //     audioEl.current.play();
+  //     setMusicContainer("play");
+  //     setFlowIcon(faPause);
+  //   }
+  // }, [isPlaying]);
 
-    if (songIndex > songs.length - 1) {
-      songIndex = 0;
-    }
+  // const handleNextSong = () => {
+  //   songIndex++;
 
-    setSongName(songs[songIndex].title);
-    setSongAudio(songs[songIndex].audio);
-    setSongImage(songs[songIndex].image);
+  //   if (songIndex > songs.length - 1) {
+  //     songIndex = 0;
+  //   }
 
-    setIsPlaying(false);
-  };
+  //   setSongName(songs[0][songIndex].title);
+  //   setSongAudio(songs[0][songIndex].audio);
+  //   setSongImage(songs[0][songIndex].image);
 
-  const handlePrevSong = () => {
-    songIndex--;
+  //   setIsPlaying(false);
+  // };
 
-    if (songIndex < 0) {
-      songIndex = songs.length - 1;
-    }
+  // const handlePrevSong = () => {
+  //   songIndex--;
 
-    setSongName(songs[songIndex].title);
-    setSongAudio(songs[songIndex].audio);
-    setSongImage(songs[songIndex].image);
+  //   if (songIndex < 0) {
+  //     songIndex = songs.length - 1;
+  //   }
 
-    setIsPlaying(false);
-  };
+  //   setSongName(songs[0][songIndex].title);
+  //   setSongAudio(songs[0][songIndex].audio);
+  //   setSongImage(songs[0][songIndex].image);
 
-  const handleControl = () => {
-    if (flowIcon === faPlay) {
-      setFlowIcon(faPause);
-      setIsPlaying(false);
-    } else {
-      setFlowIcon(faPlay);
-      setIsPlaying(true);
-    }
-  };
+  //   setIsPlaying(false);
+  // };
 
-  const handleEnded = () => {
-    handleNextSong();
-  };
+  // const handleControl = () => {
+  //   if (flowIcon === faPlay) {
+  //     setFlowIcon(faPause);
+  //     setIsPlaying(false);
+  //   } else {
+  //     setFlowIcon(faPlay);
+  //     setIsPlaying(true);
+  //   }
+  // };
 
-  const setProgress = (e) => {
-    const width = this.clientWidth;
-    const clickX = e.offsetX;
-    const duration = audioEl.duration;
+  // const handleEnded = () => {
+  //   handleNextSong();
+  // };
 
-    audioEl.currentTime = (clickX / width) * duration;
-  };
+  // const setProgress = (e) => {
+  //   const width = this.clientWidth;
+  //   const clickX = e.offsetX;
+  //   const duration = audioEl.duration;
 
-  const updateProgress = (e) => {
-    const duration = e.target.duration;
-    const currentTime = e.target.currentTime;
+  //   audioEl.currentTime = (clickX / width) * duration;
+  // };
 
-    const progressPercent = (currentTime / duration) * 100;
-    setBar(progressPercent);
-  };
+  // const updateProgress = (e) => {
+  //   const duration = e.target.duration;
+  //   const currentTime = e.target.currentTime;
+
+  //   const progressPercent = (currentTime / duration) * 100;
+  //   setBar(progressPercent);
+  // };
 
   const makeRequest = (e) => {
     e.preventDefault();
@@ -141,7 +131,25 @@ export default function Player() {
         },
       })
       .then((res) => {
-        console.log(res.data);
+        // songs.push(
+        //   res.data.results.map((item) => {
+        //     return { title: item.name, audio: item.audio, image: item.image };
+        //   })
+        // );
+
+        res.data.results.map((item) => {
+          // return songs.push({title: item.name, audio: item.audio, image: item.image});
+          return songOptions.push({ value: item.audio, label: item.audio });
+        })
+        
+
+        // setSongName(songs[0][songIndex].title);
+        // setSongAudio(songs[0][songIndex].audio);
+        // setSongImage(songs[0][songIndex].image);
+
+        setSongPlayer(true);
+
+        console.log(songOptions);
       })
       .catch((err) => {
         console.log(err);
@@ -167,7 +175,18 @@ export default function Player() {
           </button>
         </div>
       </form>
-      <div className={`music-container ${musicContainer}`}>
+      {songPlayer && <div>
+          <h3>Songs go here</h3>
+          <Select
+            // defaultValue={selectedOption}
+            // onChange={setSelectedOption}
+            options={songOptions}
+            isMulti
+            placeholder="Choose your mood..."
+            required
+          />
+        </div>}
+      {/* <div className={`music-container ${musicContainer}`}>
         <div className="music-info">
           <h4 id="title">{songName}</h4>
           <div
@@ -201,7 +220,7 @@ export default function Player() {
             <FontAwesomeIcon icon={faForward} />
           </button>
         </div>
-      </div>
+      </div> */}
     </>
   );
 }
