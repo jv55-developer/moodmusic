@@ -1,6 +1,6 @@
 import "./Player.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useEffect, useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Select from "react-select";
 import axios from "axios";
 import {
@@ -9,9 +9,6 @@ import {
   faPlay,
   faPause,
 } from "@fortawesome/free-solid-svg-icons";
-
-// Keep track of song
-let songIndex = 0;
 
 const options = [
   { value: "rock", label: "rock" },
@@ -29,95 +26,97 @@ const options = [
   { value: "gospel", label: "gospel" },
 ];
 
+// Keep track of song
+let songIndex = 0;
+
 export default function Player() {
   // Song Titles
-  const songs = [];
   const songOptions = [];
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [songs, setSongs] = useState();
+  const [songPlayer, setSongPlayer] = useState(false);
 
-  const [songName, setSongName] = useState();
-  const [songAudio, setSongAudio] = useState();
-  const [songImage, setSongImage] = useState();
+  // CREATE A .ENV FILE AND INCLUDE YOUR JAMENDO CLIENT ID
+  const client_id = process.env.REACT_APP_CLIENT_ID;
+
+  const [songName, setSongName] = useState('');
+  const [songAudio, setSongAudio] = useState('');
+  const [songImage, setSongImage] = useState('');
   const [flowIcon, setFlowIcon] = useState(faPlay);
   const [musicContainer, setMusicContainer] = useState("");
   const [isPlaying, setIsPlaying] = useState(true);
   const audioEl = useRef(null);
   const [bar, setBar] = useState(0);
 
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [songPlayer, setSongPlayer] = useState(false);
+  useEffect(() => {
+    if (isPlaying) {
+      audioEl.current.pause();
+      setMusicContainer("");
+      setFlowIcon(faPlay);
+    } else if (!isPlaying) {
+      audioEl.current.play();
+      setMusicContainer("play");
+      setFlowIcon(faPause);
+    }
+  }, [isPlaying]);
 
-  // CREATE A .ENV FILE AND INCLUDE YOUR JAMENDO CLIENT ID
-  const client_id = process.env.REACT_APP_CLIENT_ID;
+  const handleNextSong = () => {
+    songIndex++;
 
-  // useEffect(() => {
-  //   if (isPlaying) {
-  //     audioEl.current.pause();
-  //     setMusicContainer("");
-  //     setFlowIcon(faPlay);
-  //   } else if (!isPlaying) {
-  //     audioEl.current.play();
-  //     setMusicContainer("play");
-  //     setFlowIcon(faPause);
-  //   }
-  // }, [isPlaying]);
+    if (songIndex > songs.length - 1) {
+      songIndex = 0;
+    }
 
-  // const handleNextSong = () => {
-  //   songIndex++;
+    setSongName(songs[songIndex].title);
+    setSongAudio(songs[songIndex].audio);
+    setSongImage(songs[songIndex].image);
 
-  //   if (songIndex > songs.length - 1) {
-  //     songIndex = 0;
-  //   }
+    setIsPlaying(false);
+  };
 
-  //   setSongName(songs[0][songIndex].title);
-  //   setSongAudio(songs[0][songIndex].audio);
-  //   setSongImage(songs[0][songIndex].image);
+  const handlePrevSong = () => {
+    songIndex--;
 
-  //   setIsPlaying(false);
-  // };
+    if (songIndex < 0) {
+      songIndex = songs.length - 1;
+    }
 
-  // const handlePrevSong = () => {
-  //   songIndex--;
+    setSongName(songs[songIndex].title);
+    setSongAudio(songs[songIndex].audio);
+    setSongImage(songs[songIndex].image);
 
-  //   if (songIndex < 0) {
-  //     songIndex = songs.length - 1;
-  //   }
+    setIsPlaying(false);
+  };
 
-  //   setSongName(songs[0][songIndex].title);
-  //   setSongAudio(songs[0][songIndex].audio);
-  //   setSongImage(songs[0][songIndex].image);
+  const handleControl = () => {
+    if (flowIcon === faPlay) {
+      setFlowIcon(faPause);
+      setIsPlaying(false);
+    } else {
+      setFlowIcon(faPlay);
+      setIsPlaying(true);
+    }
+  };
 
-  //   setIsPlaying(false);
-  // };
+  const handleEnded = () => {
+    handleNextSong();
+  };
 
-  // const handleControl = () => {
-  //   if (flowIcon === faPlay) {
-  //     setFlowIcon(faPause);
-  //     setIsPlaying(false);
-  //   } else {
-  //     setFlowIcon(faPlay);
-  //     setIsPlaying(true);
-  //   }
-  // };
+  const setProgress = (e) => {
+    const width = this.clientWidth;
+    const clickX = e.offsetX;
+    const duration = audioEl.duration;
 
-  // const handleEnded = () => {
-  //   handleNextSong();
-  // };
+    audioEl.currentTime = (clickX / width) * duration;
+  };
 
-  // const setProgress = (e) => {
-  //   const width = this.clientWidth;
-  //   const clickX = e.offsetX;
-  //   const duration = audioEl.duration;
+  const updateProgress = (e) => {
+    const duration = e.target.duration;
+    const currentTime = e.target.currentTime;
 
-  //   audioEl.currentTime = (clickX / width) * duration;
-  // };
-
-  // const updateProgress = (e) => {
-  //   const duration = e.target.duration;
-  //   const currentTime = e.target.currentTime;
-
-  //   const progressPercent = (currentTime / duration) * 100;
-  //   setBar(progressPercent);
-  // };
+    const progressPercent = (currentTime / duration) * 100;
+    setBar(progressPercent);
+  };
 
   const makeRequest = (e) => {
     e.preventDefault();
@@ -131,25 +130,21 @@ export default function Player() {
         },
       })
       .then((res) => {
-        // songs.push(
-        //   res.data.results.map((item) => {
-        //     return { title: item.name, audio: item.audio, image: item.image };
-        //   })
-        // );
-
         res.data.results.map((item) => {
-          // return songs.push({title: item.name, audio: item.audio, image: item.image});
-          return songOptions.push({ value: item.audio, label: item.audio });
-        })
-        
-
-        // setSongName(songs[0][songIndex].title);
-        // setSongAudio(songs[0][songIndex].audio);
-        // setSongImage(songs[0][songIndex].image);
+          return songOptions.push({
+            title: item.name,
+            audio: item.audio,
+            image: item.image,
+          });
+        });
 
         setSongPlayer(true);
 
-        console.log(songOptions);
+        setSongs(songOptions);
+
+        setSongName(songs[songIndex].title);
+        setSongAudio(songs[songIndex].audio);
+        setSongImage(songs[songIndex].image);
       })
       .catch((err) => {
         console.log(err);
@@ -175,52 +170,46 @@ export default function Player() {
           </button>
         </div>
       </form>
-      {songPlayer && <div>
-          <h3>Songs go here</h3>
-          <Select
-            // defaultValue={selectedOption}
-            // onChange={setSelectedOption}
-            options={songOptions}
-            isMulti
-            placeholder="Choose your mood..."
-            required
-          />
-        </div>}
-      {/* <div className={`music-container ${musicContainer}`}>
-        <div className="music-info">
-          <h4 id="title">{songName}</h4>
-          <div
-            onClick={(e) => setProgress(e)}
-            className="progress-container"
-            id="progress-container"
-          >
-            <div className="progress" style={{ width: `${bar}%` }}></div>
+      {songPlayer && (
+        <div className={`music-container ${musicContainer}`}>
+          <div className="music-info">
+            <h4 id="title">{songName}</h4>
+            <div
+              onClick={(e) => setProgress(e)}
+              className="progress-container"
+              id="progress-container"
+            >
+              <div className="progress" style={{ width: `${bar}%` }}></div>
+            </div>
+          </div>
+
+          <audio
+            onTimeUpdate={(e) => updateProgress(e)}
+            onEnded={handleEnded}
+            ref={audioEl}
+            autoPlay
+            src={songAudio}
+          ></audio>
+          <div className="img-container">
+            <img src={songImage} alt="music-cover" id="cover" />
+          </div>
+
+          <div className="navigation">
+            <button onClick={handlePrevSong} id="prev" className="action-btn">
+              <FontAwesomeIcon icon={faBackward} />
+            </button>
+            <button
+              onClick={handleControl}
+              className="action-btn action-btn-big"
+            >
+              <FontAwesomeIcon icon={flowIcon} />
+            </button>
+            <button onClick={handleNextSong} className="action-btn">
+              <FontAwesomeIcon icon={faForward} />
+            </button>
           </div>
         </div>
-
-        <audio
-          onTimeUpdate={(e) => updateProgress(e)}
-          onEnded={handleEnded}
-          ref={audioEl}
-          autoPlay
-          src={songAudio}
-        ></audio>
-        <div className="img-container">
-          <img src={songImage} alt="music-cover" id="cover" />
-        </div>
-
-        <div className="navigation">
-          <button onClick={handlePrevSong} id="prev" className="action-btn">
-            <FontAwesomeIcon icon={faBackward} />
-          </button>
-          <button onClick={handleControl} className="action-btn action-btn-big">
-            <FontAwesomeIcon icon={flowIcon} />
-          </button>
-          <button onClick={handleNextSong} className="action-btn">
-            <FontAwesomeIcon icon={faForward} />
-          </button>
-        </div>
-      </div> */}
+      )}
     </>
   );
 }
