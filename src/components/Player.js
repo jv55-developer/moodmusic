@@ -39,9 +39,9 @@ export default function Player() {
   // CREATE A .ENV FILE AND INCLUDE YOUR JAMENDO CLIENT ID
   const client_id = process.env.REACT_APP_CLIENT_ID;
 
-  const [songName, setSongName] = useState('');
-  const [songAudio, setSongAudio] = useState('');
-  const [songImage, setSongImage] = useState('');
+  const [songName, setSongName] = useState("");
+  const [songAudio, setSongAudio] = useState("");
+  const [songImage, setSongImage] = useState("");
   const [flowIcon, setFlowIcon] = useState(faPlay);
   const [musicContainer, setMusicContainer] = useState("");
   const [isPlaying, setIsPlaying] = useState(true);
@@ -49,14 +49,16 @@ export default function Player() {
   const [bar, setBar] = useState(0);
 
   useEffect(() => {
-    if (isPlaying) {
-      audioEl.current.pause();
-      setMusicContainer("");
-      setFlowIcon(faPlay);
-    } else if (!isPlaying) {
-      audioEl.current.play();
-      setMusicContainer("play");
-      setFlowIcon(faPause);
+    if (audioEl.current) {
+      if (isPlaying) {
+        audioEl.current.pause();
+        setMusicContainer("");
+        setFlowIcon(faPlay);
+      } else {
+        audioEl.current.play();
+        setMusicContainer("play");
+        setFlowIcon(faPause);
+      }
     }
   }, [isPlaying]);
 
@@ -103,11 +105,13 @@ export default function Player() {
   };
 
   const setProgress = (e) => {
-    const width = this.clientWidth;
-    const clickX = e.offsetX;
-    const duration = audioEl.duration;
+    const width = e.currentTarget.clientWidth;
+    const clickX = e.nativeEvent.offsetX;
+    const duration = audioEl.current?.duration;
 
-    audioEl.currentTime = (clickX / width) * duration;
+    if (duration) {
+      audioEl.current.currentTime = (clickX / width) * duration;
+    }
   };
 
   const updateProgress = (e) => {
@@ -142,9 +146,12 @@ export default function Player() {
 
         setSongs(songOptions);
 
-        setSongName(songs[songIndex].title);
-        setSongAudio(songs[songIndex].audio);
-        setSongImage(songs[songIndex].image);
+        setSongName(songOptions[songIndex].title);
+        setSongAudio(songOptions[songIndex].audio);
+        setSongImage(songOptions[songIndex].image);
+
+        setMusicContainer("play");
+        setFlowIcon(faPause);
       })
       .catch((err) => {
         console.log(err);
