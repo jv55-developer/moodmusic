@@ -125,12 +125,17 @@ export default function Player() {
   const makeRequest = (e) => {
     e.preventDefault();
 
+    const genres = selectedOption.map((item) => {
+      return item.value;
+    });
+
     axios
       .get("https://api.jamendo.com/v3.0/tracks", {
         params: {
           client_id: client_id,
           format: "json",
-          limit: 5,
+          limit: 10,
+          tags: genres.join(',')
         },
       })
       .then((res) => {
