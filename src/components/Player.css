@@ -123,3 +123,8 @@
     width: 0%;
     transition: width 0.1s linear;
 }
+
+.btn-refresh {
+    height: 40px !important;
+    margin: auto;
+}

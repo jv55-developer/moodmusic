@@ -8,6 +8,7 @@ import {
   faForward,
   faPlay,
   faPause,
+  faRefresh,
 } from "@fortawesome/free-solid-svg-icons";
 
 const options = [
@@ -29,7 +30,9 @@ const options = [
 // Keep track of song
 let songIndex = 0;
 
-export default function Player() {
+export default function Player({ onStateChange }) {
+  const [localState, setLocalState] = useState(true);
+
   // Song Titles
   const songOptions = [];
   const [selectedOption, setSelectedOption] = useState(null);
@@ -44,9 +47,10 @@ export default function Player() {
   const [songImage, setSongImage] = useState("");
   const [flowIcon, setFlowIcon] = useState(faPlay);
   const [musicContainer, setMusicContainer] = useState("");
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
   const audioEl = useRef(null);
   const [bar, setBar] = useState(0);
+  const [showForm, setShowForm] = useState(true);
 
   useEffect(() => {
     if (audioEl.current) {
@@ -135,7 +139,7 @@ export default function Player() {
           client_id: client_id,
           format: "json",
           limit: 10,
-          tags: genres.join(',')
+          tags: genres.join(","),
         },
       })
       .then((res) => {
@@ -157,31 +161,45 @@ export default function Player() {
 
         setMusicContainer("play");
         setFlowIcon(faPause);
+
+        setShowForm(false);
+
+        const newState = !localState;
+        setLocalState(newState);
+        onStateChange(newState); // Notify the parent of the new state
       })
       .catch((err) => {
         console.log(err);
       });
   };
 
+  const resetApp = (e) => {
+    e.preventDefault();
+
+    window.location.reload();
+  };
+
   return (
     <>
-      <form onSubmit={makeRequest} className="row g-3">
-        <div className="col-auto">
-          <Select
-            defaultValue={selectedOption}
-            onChange={setSelectedOption}
-            options={options}
-            isMulti
-            placeholder="Choose your mood..."
-            required
-          />
-        </div>
-        <div className="col-auto">
-          <button type="submit" className="btn btn-primary">
-            Search
-          </button>
-        </div>
-      </form>
+      {showForm && (
+        <form onSubmit={makeRequest} className="row g-3">
+          <div className="col-auto">
+            <Select
+              defaultValue={selectedOption}
+              onChange={setSelectedOption}
+              options={options}
+              isMulti
+              placeholder="Choose your mood..."
+              required
+            />
+          </div>
+          <div className="col-auto">
+            <button type="submit" className="btn btn-primary">
+              Search
+            </button>
+          </div>
+        </form>
+      )}
       {songPlayer && (
         <div className={`music-container ${musicContainer}`}>
           <div className="music-info">
@@ -220,6 +238,11 @@ export default function Player() {
               <FontAwesomeIcon icon={faForward} />
             </button>
           </div>
+
+          <button onClick={resetApp} className="btn btn-primary btn-refresh">
+            {" "}
+            <FontAwesomeIcon icon={faRefresh} />
+          </button>
         </div>
       )}
     </>

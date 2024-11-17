@@ -3,13 +3,17 @@ import "./App.css";
 import Player from "./components/Player";
 
 function App() {
-  const [music, setMusic] = useState([]);
-  const [showPlayer, setShowPlayer] = useState(false);
+  const [childState, setChildState] = useState(true); // Parent state
+
+  // Function to update the state in the parent component
+  const handleChildStateChange = (newState) => {
+    setChildState(newState);
+  };
 
   return (
     <div className="App container">
-      <h2>Mood Music</h2>
-      <Player />
+      {childState && <h2>Mood Music</h2>}
+      <Player onStateChange={handleChildStateChange} />
     </div>
   );
 }
